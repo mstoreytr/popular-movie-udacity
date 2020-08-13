@@ -27,7 +27,7 @@ public class DetailsActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         CollapsingToolbarLayout toolBarLayout = findViewById(R.id.toolbar_layout);
         // First get the movie from the intent
-        detailedMovie = (Movie) Objects.requireNonNull(getIntent().getExtras()).get("MOVIE");
+        detailedMovie = (Movie) Objects.requireNonNull(getIntent().getExtras()).get(getString(R.string.movie_intent));
         if (detailedMovie == null) {
             // No movie to show so finish
             finish();
@@ -41,8 +41,7 @@ public class DetailsActivity extends AppCompatActivity {
         year.setText(getString(R.string.year_string, formatReleaseDate()));
         rating.setText(getString(R.string.rating_string, detailedMovie.getVoteAverage()));
         plot.setText(getString(R.string.plot_string, detailedMovie.getOverview()));
-        Picasso.get().load("https://image.tmdb.org/t/p/w342"+detailedMovie.getPosterPath()).into(poster);
-
+        Picasso.get().load(getString(R.string.poster_url, detailedMovie.getPosterPath())).into(poster);
     }
     // Make release date look readable
     private String formatReleaseDate() {

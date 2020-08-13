@@ -37,7 +37,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MovieListActivity extends AppCompatActivity implements MovieListListener {
 
-    // TODO() PLACE YOUR MOVIE API KEY HERE
+    // TODO() PLACE YOUR MOVIE-DB API KEY HERE
     private String movieKEY = "";
     private int currentPage = 1;
     private SortByTypes currentType = SortByTypes.MOST_POPULAR;
@@ -113,15 +113,15 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
 
     private void setUpMovieApi() {
         // Set up requests
-        Retrofit retrofit = new Retrofit.Builder().baseUrl("https://api.themoviedb.org").addConverterFactory(GsonConverterFactory.create()).build();
+        Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.movie_db_url)).addConverterFactory(GsonConverterFactory.create()).build();
         this.api = retrofit.create(MovieDBApi.class);
         // set up response handling
         responseCallback = new Callback<MovieListResponse>() {
             @Override
-            public void onResponse(Call<MovieListResponse> call, Response<MovieListResponse> response) {
+            public void onResponse(@NonNull Call<MovieListResponse> call, @NonNull Response<MovieListResponse> response) {
                 isLoading = false;
                 // Listadapter's list can't be modified so create a copy and append new items
-                List<Movie> currentList = new ArrayList<Movie>(adapter.getCurrentList());
+                List<Movie> currentList = new ArrayList<>(adapter.getCurrentList());
                 if (response.body() != null) {
                     currentList.addAll(response.body().getMovies());
                     adapter.submitList(currentList);
@@ -129,9 +129,9 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
             }
 
             @Override
-            public void onFailure(Call<MovieListResponse> call, Throwable t) {
+            public void onFailure(@NonNull Call<MovieListResponse> call, @NonNull Throwable t) {
                 isLoading = false;
-                Log.e(this.getClass().getName(), "ERROR ON MOVIES CALL = " + t.getLocalizedMessage());
+                Log.e(this.getClass().getName(), t.toString());
             }
         };
     }
@@ -207,7 +207,7 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
     // Click callback for opening item selection
     public void onMovieClick(Movie movie) {
         Intent intent = new Intent(this, DetailsActivity.class);
-        intent.putExtra("MOVIE", movie);
+        intent.putExtra(getString(R.string.movie_intent), movie);
         startActivity(intent);
     }
 }

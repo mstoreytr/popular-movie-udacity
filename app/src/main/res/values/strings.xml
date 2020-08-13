@@ -6,9 +6,11 @@
     <string name="sort_popular">Most popular</string>
     <string name="image_description">Image of Movie Selected</string>
     <string name="movie_poster">Movie poster</string>
-
+    <string name="poster_url">https://image.tmdb.org/t/p/w342%s</string>
     <string name="year_string">Released:\n\t%s</string>
     <string name="plot_string">Plot: %s</string>
     <string name="rating_string">Rating: %.2f/10.0</string>
+    <string name="movie_intent">MOVIE</string>
+    <string name="movie_db_url">https://api.themoviedb.org</string>
 
 </resources>
