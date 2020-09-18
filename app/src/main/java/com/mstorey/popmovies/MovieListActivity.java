@@ -7,33 +7,26 @@ import android.net.Network;
 import android.net.NetworkRequest;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.CollapsingToolbarLayout;
-import com.mstorey.popmovies.adapters.MovieDiffCallback;
-import com.mstorey.popmovies.adapters.MovieListAdapter;
-import com.mstorey.popmovies.adapters.MovieListListener;
-import com.mstorey.popmovies.requests.MovieDBApi;
-import com.mstorey.popmovies.requests.SortByTypes;
-import com.mstorey.popmovies.responses.Movie;
-import com.mstorey.popmovies.responses.MovieListResponse;
+import com.mstorey.popmovies.adapters.movies.MovieDiffCallback;
+import com.mstorey.popmovies.adapters.movies.MovieListAdapter;
+import com.mstorey.popmovies.adapters.movies.MovieListListener;
+import com.mstorey.popmovies.data.requests.SortByTypes;
+import com.mstorey.popmovies.data.responses.Movie;
+import com.mstorey.popmovies.viewmodels.MovieViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MovieListActivity extends AppCompatActivity implements MovieListListener {
 
@@ -43,9 +36,8 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
     private SortByTypes currentType = SortByTypes.MOST_POPULAR;
     private Boolean isLoading = false;
     private Boolean connectionLost = false;
-    private MovieDBApi api;
+    private MovieViewModel movieViewModel;
     private MovieListAdapter adapter;
-    private Callback<MovieListResponse> responseCallback;
     private RecyclerView movieRecyclerView;
     // For restoring list
     private Parcelable movieRecyclerViewState;
@@ -60,13 +52,25 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
         checkNetworkConnection();
         setUpBaseView();
         setUpRecyclerView();
-        setUpMovieApi();
-        // Finally fetch the first page
-        fetchMovies(currentPage);
+        setUpViewModel();
+    }
+
+    private void setUpViewModel() {
+        movieViewModel = new ViewModelProvider(this).get(MovieViewModel.class);
+        movieViewModel.getMovieList().observe(this, movies -> {
+            // Listadapter's list can't be modified so create a copy and append new items
+            List<Movie> currentList = new ArrayList<>(adapter.getCurrentList());
+            if (movies != null) {
+                currentList.addAll(movies);
+                adapter.submitList(currentList);
+            }
+        });
+        // We have to start observing for the live data to receive updates
+        movieViewModel.getFavorites().observe(this, movies -> {});
     }
 
     private void setUpBaseView() {
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.main_layout);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         CollapsingToolbarLayout toolBarLayout = findViewById(R.id.toolbar_layout);
@@ -104,36 +108,11 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
                 super.onAvailable(network);
                 if (connectionLost) {
                     connectionLost = false;
-                    fetchMovies(currentPage);
+                    movieViewModel.fetchMovieList(currentType.getType(), currentPage);
                 }
             }
         });
         connectionLost = cm.getActiveNetworkInfo() == null;
-    }
-
-    private void setUpMovieApi() {
-        // Set up requests
-        Retrofit retrofit = new Retrofit.Builder().baseUrl(getString(R.string.movie_db_url)).addConverterFactory(GsonConverterFactory.create()).build();
-        this.api = retrofit.create(MovieDBApi.class);
-        // set up response handling
-        responseCallback = new Callback<MovieListResponse>() {
-            @Override
-            public void onResponse(@NonNull Call<MovieListResponse> call, @NonNull Response<MovieListResponse> response) {
-                isLoading = false;
-                // Listadapter's list can't be modified so create a copy and append new items
-                List<Movie> currentList = new ArrayList<>(adapter.getCurrentList());
-                if (response.body() != null) {
-                    currentList.addAll(response.body().getMovies());
-                    adapter.submitList(currentList);
-                }
-            }
-
-            @Override
-            public void onFailure(@NonNull Call<MovieListResponse> call, @NonNull Throwable t) {
-                isLoading = false;
-                Log.e(this.getClass().getName(), t.toString());
-            }
-        };
     }
 
     private void setUpRecyclerView() {
@@ -154,21 +133,12 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
                     if (layoutManager != null
                             && layoutManager.findLastVisibleItemPosition()+ 15 > adapter.getItemCount()) {
                         currentPage++;
-                        fetchMovies(currentPage);
+                        movieViewModel.fetchMovieList(currentType.getType(), currentPage);
                     }
                 }
             }
         });
     }
-
-    private void fetchMovies(int page) {
-        if (isLoading) {
-            return;
-        }
-        isLoading = true;
-        api.fetchMovieList(currentType.getType(), movieKEY, page).enqueue(responseCallback);
-    }
-
     // Option menu for the Sort by feature
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -178,14 +148,17 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        int id = item.getItemId();
-        if (id == R.id.action_popular) {
-            resetAndFetchForType(SortByTypes.MOST_POPULAR);
-            return true;
-        }
-        if (id == R.id.action_rated) {
-            resetAndFetchForType(SortByTypes.HIGHEST_RATED);
-            return true;
+        item.setChecked(!item.isChecked());
+        switch (item.getItemId()) {
+            case R.id.action_popular:
+                resetAndFetchForType(SortByTypes.MOST_POPULAR);
+                return true;
+            case R.id.action_rated:
+                resetAndFetchForType(SortByTypes.HIGHEST_RATED);
+                return true;
+            case R.id.action_favorite:
+                resetAndFetchForType(SortByTypes.FAVORITE);
+                return true;
         }
         return super.onOptionsItemSelected(item);
     }
@@ -199,7 +172,11 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
             currentType = newType;
             currentPage = 1;
             adapter.submitList(null);
-            fetchMovies(currentPage);
+            if (newType == SortByTypes.FAVORITE) {
+                adapter.submitList(movieViewModel.getFavorites().getValue());
+            } else {
+                movieViewModel.fetchMovieList(currentType.getType(), currentPage);
+            }
         }
     }
 

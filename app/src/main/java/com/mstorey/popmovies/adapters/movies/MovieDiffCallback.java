@@ -1,9 +1,9 @@
-package com.mstorey.popmovies.adapters;
+package com.mstorey.popmovies.adapters.movies;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.DiffUtil;
 
-import com.mstorey.popmovies.responses.Movie;
+import com.mstorey.popmovies.data.responses.Movie;
 
 import java.util.Objects;
 

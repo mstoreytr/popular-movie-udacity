@@ -4,13 +4,21 @@
     <string name="sort_by">Sort By</string>
     <string name="sort_rated">Highest rated</string>
     <string name="sort_popular">Most popular</string>
+    <string name="sort_favorite">Your Favorites</string>
     <string name="image_description">Image of Movie Selected</string>
     <string name="movie_poster">Movie poster</string>
     <string name="poster_url">https://image.tmdb.org/t/p/w342%s</string>
-    <string name="year_string">Released:\n\t%s</string>
-    <string name="plot_string">Plot: %s</string>
-    <string name="rating_string">Rating: %.2f/10.0</string>
+    <string name="rating_string">%.2f/10.0</string>
     <string name="movie_intent">MOVIE</string>
     <string name="movie_db_url">https://api.themoviedb.org</string>
+    <string name="favorite_text_add">Add to Favorites</string>
+    <string name="favorite_text_remove">Remove from Favorites</string>
+    <string name="trailer_url_youtube">https://www.youtube.com/watch?v=%s</string>
+    <string name="bad_intent_message">Sorry, there was an issue opening this link.\nPlease try again.</string>
+    <string name="trailers_section_title">Trailers</string>
+    <string name="reviews_section_title">Reviews</string>
+    <string name="plot_section_title">Plot</string>
+    <string name="year_title">Released:</string>
+    <string name="rating_title">Rating:</string>
 
 </resources>

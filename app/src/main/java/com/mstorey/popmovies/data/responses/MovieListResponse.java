@@ -1,4 +1,4 @@
-package com.mstorey.popmovies.responses;
+package com.mstorey.popmovies.data.responses;
 
 import androidx.annotation.Keep;
 

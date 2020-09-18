@@ -1,11 +1,17 @@
 # popular-movie-udacity
-Popular Movie App for Udacity Project
+Popular Movie App for Udacity Project Stage 2
 
-This android app uses the Movie DB api along with Retrofit to fetch popular and top rated movies from these endpoints
+This android app uses the Movie DB api along with Retrofit to fetch popular and top rated movies from these endpoints.
 
 - https://developers.themoviedb.org/3/movies/get-popular-movies
 
 - https://developers.themoviedb.org/3/movies/get-top-rated-movies
+
+Stage 2 includes trailers and reviews fetched from the following endpoints.
+
+- https://developers.themoviedb.org/3/movies/get-movie-videos
+
+- https://developers.themoviedb.org/3/movies/get-movie-reviews
 
 The results are parsed to objects via GSON
 

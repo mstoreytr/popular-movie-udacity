@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/trailer_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:orientation="horizontal">
+
+    <Button
+        android:id="@+id/trailer_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:drawablePadding="20dp"
+        android:background="@android:color/transparent"
+        app:drawableTint="@color/colorPrimary"
+        android:drawableStart="@android:drawable/ic_menu_slideshow"/>
+
+</LinearLayout>

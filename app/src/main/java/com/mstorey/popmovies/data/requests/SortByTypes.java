@@ -1,8 +1,9 @@
-package com.mstorey.popmovies.requests;
+package com.mstorey.popmovies.data.requests;
 
 public enum SortByTypes {
     HIGHEST_RATED("top_rated"),
-    MOST_POPULAR("popular");
+    MOST_POPULAR("popular"),
+    FAVORITE("favorites");
     String type;
     SortByTypes(String type) {
         this.type = type;

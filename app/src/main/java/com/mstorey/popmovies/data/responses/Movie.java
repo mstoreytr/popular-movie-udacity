@@ -1,53 +1,83 @@
-package com.mstorey.popmovies.responses;
+package com.mstorey.popmovies.data.responses;
 
 import androidx.annotation.Keep;
+import androidx.room.ColumnInfo;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
-import java.util.List;
+
+/**
+ * Using gson and room annotations since both models are the same
+ */
 @Keep
+@Entity(tableName = "favorites")
 public class Movie implements Serializable {
+
+    @ColumnInfo(name = "popularity")
     @SerializedName("popularity")
     @Expose
     private double popularity;
+
+    @ColumnInfo(name = "vote_count")
     @SerializedName("vote_count")
     @Expose
     private int voteCount;
+
+    @ColumnInfo(name = "video")
     @SerializedName("video")
     @Expose
     private boolean video;
+
+    @ColumnInfo(name = "poster_path")
     @SerializedName("poster_path")
     @Expose
     private String posterPath;
+
+    @PrimaryKey(autoGenerate = true)
     @SerializedName("id")
     @Expose
     private int id;
+
+    @ColumnInfo(name = "adult")
     @SerializedName("adult")
     @Expose
     private boolean adult;
+
+    @ColumnInfo(name = "backdrop_path")
     @SerializedName("backdrop_path")
     @Expose
     private String backdropPath;
+
+    @ColumnInfo(name = "original_language")
     @SerializedName("original_language")
     @Expose
     private String originalLanguage;
+
+    @ColumnInfo(name = "original_title")
     @SerializedName("original_title")
     @Expose
     private String originalTitle;
-    @SerializedName("genre_ids")
-    @Expose
-    private List<Integer> genreIds = null;
+
+    @ColumnInfo(name = "title")
     @SerializedName("title")
     @Expose
     private String title;
+
+    @ColumnInfo(name = "vote_average")
     @SerializedName("vote_average")
     @Expose
     private double voteAverage;
+
+    @ColumnInfo(name = "overview")
     @SerializedName("overview")
     @Expose
     private String overview;
+
+    @ColumnInfo(name = "release_date")
     @SerializedName("release_date")
     @Expose
     private String releaseDate;
@@ -78,9 +108,6 @@ public class Movie implements Serializable {
 
     public String getOriginalTitle() { return originalTitle; }
     public void setOriginalTitle(String value) { this.originalTitle = value; }
-
-    public List<Integer> getGenreIds() { return genreIds; }
-    public void setGenreIds(List<Integer> value) { this.genreIds = value; }
 
     public String getTitle() { return title; }
     public void setTitle(String value) { this.title = value; }
