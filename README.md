@@ -17,9 +17,11 @@ The results are parsed to objects via GSON
 
 The results are then displayed in a Recyclerview that uses a listadapter
 
-The dropdown in the top right corner can switch the view from "Most Popular" to "Highest Rated"
+The dropdown in the top right corner can switch the view to either "Most Popular", "Highest Rated", or "Your Favorites"
 
-Once a user clicks a item, the movie object is sent in an intent to a new screen to display detailed info like plot or rating.
+Favorites are saved locally using Room
+
+Once a user clicks a item, the movie object is sent in an intent to a new screen to display detailed info like plot or rating. On the detail page there are also trailers that open in Youtube/Browser and a list of reviews.
 
 To handle network connection related errors, the ACCESS_NETWORK_STATE permission and ConnectivityManager are used to retry requests on network restoration
 
@@ -28,4 +30,4 @@ Please follow the steps for creating an account listed here
 
 https://developers.themoviedb.org/3/getting-started/introduction
 
-Once you have a key of your own please update the field "movieKEY" in MovieListActivity.java or use the TODO finder in Android Studio to quickly find it.
+Once you have a key of your own please update the field "movieKEY" in MovieRespository.java or use the TODO finder in Android Studio to quickly find it.
