@@ -2,6 +2,7 @@ package com.mstorey.popmovies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkRequest;
@@ -26,15 +27,13 @@ import com.mstorey.popmovies.data.responses.Movie;
 import com.mstorey.popmovies.viewmodels.MovieViewModel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class MovieListActivity extends AppCompatActivity implements MovieListListener {
 
-    // TODO() PLACE YOUR MOVIE-DB API KEY HERE
-    private String movieKEY = "";
+    private static String SORT_TYPE = "SORT_TYPE";
+    private static String PAGE_NUM = "PAGE";
     private int currentPage = 1;
     private SortByTypes currentType = SortByTypes.MOST_POPULAR;
-    private Boolean isLoading = false;
     private Boolean connectionLost = false;
     private MovieViewModel movieViewModel;
     private MovieListAdapter adapter;
@@ -49,24 +48,37 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
             // Already have a saved state, must be restoring from background
             return;
         }
+        if (savedInstanceState != null ) {
+            currentType = SortByTypes.getFromString(savedInstanceState.getString(SORT_TYPE));
+            currentPage = savedInstanceState.getInt(PAGE_NUM);
+        }
         checkNetworkConnection();
+        setUpViewModel();
         setUpBaseView();
         setUpRecyclerView();
-        setUpViewModel();
+    }
+
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        outState.putString(SORT_TYPE, currentType.getType());
+        outState.putInt(PAGE_NUM, currentPage);
+        super.onSaveInstanceState(outState);
     }
 
     private void setUpViewModel() {
         movieViewModel = new ViewModelProvider(this).get(MovieViewModel.class);
         movieViewModel.getMovieList().observe(this, movies -> {
-            // Listadapter's list can't be modified so create a copy and append new items
-            List<Movie> currentList = new ArrayList<>(adapter.getCurrentList());
-            if (movies != null) {
-                currentList.addAll(movies);
-                adapter.submitList(currentList);
+            if (currentType != SortByTypes.FAVORITE && !movies.isEmpty()) {
+                adapter.submitList(new ArrayList<>(movies));
+
             }
         });
         // We have to start observing for the live data to receive updates
-        movieViewModel.getFavorites().observe(this, movies -> {});
+        movieViewModel.getFavorites().observe(this, movies -> {
+            if (currentType == SortByTypes.FAVORITE) {
+                adapter.submitList(new ArrayList<>(movies));
+            }
+        });
     }
 
     private void setUpBaseView() {
@@ -108,7 +120,9 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
                 super.onAvailable(network);
                 if (connectionLost) {
                     connectionLost = false;
-                    movieViewModel.fetchMovieList(currentType.getType(), currentPage);
+                    if (currentType != SortByTypes.FAVORITE) {
+                        movieViewModel.fetchMovieList(currentType.getType(), currentPage);
+                    }
                 }
             }
         });
@@ -118,7 +132,11 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
     private void setUpRecyclerView() {
         movieRecyclerView = findViewById(R.id.movie_list);
         // Make it a grid layout
-        movieRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        if(getResources().getConfiguration().orientation == Configuration.ORIENTATION_PORTRAIT){
+            movieRecyclerView.setLayoutManager(new GridLayoutManager(this, 2));
+        } else{
+            movieRecyclerView.setLayoutManager(new GridLayoutManager(this, 4));
+        }
         // Create a list adapter
         this.adapter = new MovieListAdapter(new MovieDiffCallback(), this);
         movieRecyclerView.setAdapter(adapter);
@@ -128,7 +146,7 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                 super.onScrollStateChanged(recyclerView, newState);
-                if (adapter.getItemCount() > 1 && !isLoading) {
+                if (adapter.getItemCount() > 1 && !movieViewModel.isLoading()) {
                     GridLayoutManager layoutManager = (GridLayoutManager) recyclerView.getLayoutManager();
                     if (layoutManager != null
                             && layoutManager.findLastVisibleItemPosition()+ 15 > adapter.getItemCount()) {
@@ -143,24 +161,52 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_scrolling, menu);
+        // Restore previous menu selection
+        int id = getMenuIDFromType();
+        MenuItem item = menu.findItem(id);
+        if (item != null) {
+            item.setChecked(true);
+        }
         return true;
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        item.setChecked(!item.isChecked());
+        boolean isSelected = false;
         switch (item.getItemId()) {
             case R.id.action_popular:
+                isSelected = true;
                 resetAndFetchForType(SortByTypes.MOST_POPULAR);
-                return true;
+                break;
             case R.id.action_rated:
+                isSelected = true;
                 resetAndFetchForType(SortByTypes.HIGHEST_RATED);
-                return true;
+                break;
             case R.id.action_favorite:
+                isSelected = true;
                 resetAndFetchForType(SortByTypes.FAVORITE);
-                return true;
+        }
+        if (isSelected) {
+            item.setChecked(true);
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    private int getMenuIDFromType() {
+        int id = 0;
+        switch (currentType) {
+            case FAVORITE:
+                id = R.id.action_favorite;
+                break;
+            case MOST_POPULAR:
+                id = R.id.action_popular;
+                break;
+            case HIGHEST_RATED:
+                id = R.id.action_rated;
+                break;
+        }
+        return id;
     }
 
     /**
@@ -171,7 +217,7 @@ public class MovieListActivity extends AppCompatActivity implements MovieListLis
         if (currentType != newType) {
             currentType = newType;
             currentPage = 1;
-            adapter.submitList(null);
+            movieViewModel.getMovieList().postValue(new ArrayList<>());
             if (newType == SortByTypes.FAVORITE) {
                 adapter.submitList(movieViewModel.getFavorites().getValue());
             } else {

@@ -18,6 +18,7 @@ import com.mstorey.popmovies.data.responses.ReviewsResponse;
 import com.mstorey.popmovies.data.responses.Trailer;
 import com.mstorey.popmovies.data.responses.TrailersResponse;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -71,17 +72,25 @@ public class MovieRespository {
         threadHandler.execute(() -> favoritesDao.deleteFavorite(movie));
     }
 
-    public void fetchMoviePage(String type, int page, MutableLiveData<List<Movie>> movieList){
+    public void fetchMoviePage(String type, int page, MutableLiveData<List<Movie>> movieList, MutableLiveData<Boolean> isLoading){
+        isLoading.postValue(true);
         movieDBApi.fetchMovieList(type, movieKEY, page).enqueue(new Callback<MovieListResponse>() {
             @Override
             public void onResponse(@NonNull Call<MovieListResponse> call, @NonNull Response<MovieListResponse> response) {
+                isLoading.postValue(false);
                 if (response.body() != null) {
-                    movieList.postValue(response.body().getMovies());
+                    List<Movie> fullList = new ArrayList<>();
+                    if (movieList.getValue() != null) {
+                        fullList = movieList.getValue();
+                    }
+                    fullList.addAll(response.body().getMovies());
+                    movieList.postValue(fullList);
                 }
             }
 
             @Override
             public void onFailure(@NonNull Call<MovieListResponse> call, @NonNull Throwable t) {
+                isLoading.postValue(false);
                 Log.e(this.getClass().getName(), t.toString());
             }
         });

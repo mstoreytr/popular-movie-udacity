@@ -26,7 +26,7 @@ import com.mstorey.popmovies.adapters.trailers.TrailerListAdapter;
 import com.mstorey.popmovies.adapters.trailers.TrailerListListener;
 import com.mstorey.popmovies.data.responses.Movie;
 import com.mstorey.popmovies.data.responses.Trailer;
-import com.mstorey.popmovies.viewmodels.MovieViewModel;
+import com.mstorey.popmovies.viewmodels.DetailViewModel;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -37,7 +37,7 @@ import java.util.Objects;
 public class DetailsActivity extends AppCompatActivity implements TrailerListListener {
 
     private Movie detailedMovie;
-    private MovieViewModel movieViewModel;
+    private DetailViewModel movieViewModel;
 
     private LinearLayout reviewContainer;
     private LinearLayout trailerContainer;
@@ -95,7 +95,7 @@ public class DetailsActivity extends AppCompatActivity implements TrailerListLis
         reviewRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         trailerRecyclerView.setAdapter(new TrailerListAdapter(new TrailerDiffCallback(), this));
         trailerRecyclerView.setLayoutManager(new LinearLayoutManager(this));
-        movieViewModel = new ViewModelProvider(this).get(MovieViewModel.class);
+        movieViewModel = new ViewModelProvider(this).get(DetailViewModel.class);
 
         movieViewModel.getReviewList().observe(this, reviews -> {
             reviewContainer.setVisibility(reviews.isEmpty() ? View.GONE : View.VISIBLE);

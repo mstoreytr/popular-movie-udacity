@@ -9,6 +9,15 @@ public enum SortByTypes {
         this.type = type;
     }
 
+    public static SortByTypes getFromString(String input) {
+        for (SortByTypes type : SortByTypes.values()) {
+            if (type.getType().equalsIgnoreCase(input)) {
+                return type;
+            }
+        }
+        return null;
+    }
+
     public String getType() {
         return type;
     }
